@@ -1,5 +1,5 @@
 import express from 'express';
-import bodyParser from 'body-parser';
+import { Request, Response, NextFunction } from 'express';
 import {filterImageFromURL, deleteLocalFiles} from './util/util';
 
 (async () => {
@@ -11,7 +11,7 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
   const port = process.env.PORT || 8082;
   
   // Use the body parser middleware for post requests
-  app.use(bodyParser.json());
+  app.use(express.json());
 
   // @TODO1 IMPLEMENT A RESTFUL ENDPOINT
   // GET /filteredimage?image_url={{URL}}
@@ -28,6 +28,24 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
   //   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
 
   /**************************************************************************** */
+
+  app.get("/filteredimage", async (req: Request, res: Response, next: NextFunction) => {
+    let { image_url } = req.query;
+
+    if (!image_url) {
+      return res.status(400).send("missing image_url query param");
+    }
+
+    try {
+      const filtered_path: string = await filterImageFromURL(image_url.toString());
+      return res.status(200).sendFile(filtered_path, () => {
+        deleteLocalFiles([filtered_path]);
+      });
+    } catch (error) {
+      console.log(error)
+      return res.status(500).send("Internal error processing image");
+    }
+  });
 
   //! END @TODO1
   
