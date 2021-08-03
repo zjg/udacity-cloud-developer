@@ -46,3 +46,18 @@ Prevent requests without valid authentication headers.
 
 Add your own domain name and have it point to the running services (try adding a subdomain name to point to the processing server)
 > !NOTE: Domain names are not included in AWS’ free tier and will incur a cost.
+
+
+
+# Failing images
+
+It seems the Jimp can't read some image URLs.
+See here: https://github.com/oliver-moran/jimp/issues/775
+
+The following URLs were not working for me:
+    * https://upload.wikimedia.org/wikipedia/commons/b/bd/Golden_tabby_and_white_kitten_n01.jpg
+    * https://commons.wikimedia.org/wiki/File:Vincent_Van_Gogh_-_Corn_Harvest_in_Provence_-_Google_Art_Project.jpg
+
+The following URL did work:
+    * https://s-media-cache-ak0.pinimg.com/736x/c9/8f/e1/c98fe17dc7de72bb29c34a0c79ef5762.jpg
+    
