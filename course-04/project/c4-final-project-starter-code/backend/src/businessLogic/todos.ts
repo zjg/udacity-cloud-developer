@@ -1,5 +1,5 @@
 import { TodoAccess } from '../helpers/todosAcess'
-// import { AttachmentUtils } from '../helpers/attachmentUtils';
+import { AttachmentUtils } from '../helpers/attachmentUtils';
 import { TodoItem } from '../models/TodoItem'
 import { TodoUpdate } from '../models/TodoUpdate'
 import { CreateTodoRequest } from '../requests/CreateTodoRequest'
@@ -10,6 +10,7 @@ import * as uuid from 'uuid'
 
 const logger = createLogger('TodoBusinessLogic')
 const todoAccess = new TodoAccess()
+const attachments = new AttachmentUtils()
 
 export async function createTodo(userId: string, request: CreateTodoRequest)
     : Promise<TodoItem>
@@ -47,7 +48,7 @@ export async function updateTodo(userId: string, todoId: string, request: Update
 
     const todoUpdate = request as TodoUpdate
 
-    return await todoAccess.updateTodoForUser(userId, todoId, todoUpdate)
+    return todoAccess.updateTodoForUser(userId, todoId, todoUpdate)
 }
 
 export async function deleteTodo(userId: string, todoId: string)
@@ -58,11 +59,22 @@ export async function deleteTodo(userId: string, todoId: string)
 
     logger.info(`deleting todo ${todoId} for user ${userId}`)
 
-    return await todoAccess.deleteTodoForUser(userId, todoId)
+    return todoAccess.deleteTodoForUser(userId, todoId)
 }
 
 export async function createAttachmentPresignedUrl(userId: string, todoId: string)
     : Promise<string>
 {
-    return todoId
+    logger.info(`getting attachment URL for ${todoId} for user ${userId}`)
+    const presignedUrl = await attachments.getPresignedUrl(todoId)
+    const attachmentUrl = getPathFromUrl(presignedUrl)
+    logger.info(`attachment URL for ${todoId}: ${attachmentUrl}`)
+    await todoAccess.setAttachmentUrl(userId, todoId, attachmentUrl)
+    return presignedUrl
+}
+
+// from: https://stackoverflow.com/a/2541083
+function getPathFromUrl(url: string): string
+{
+    return url.split(/[#?]/)[0]
 }

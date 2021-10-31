@@ -1,5 +1,4 @@
 import * as AWS from 'aws-sdk'
-import * as AWSXRay from 'aws-xray-sdk'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 import { createLogger } from '../utils/logger'
 import { TodoItem } from '../models/TodoItem'
@@ -60,6 +59,30 @@ export class TodoAccess {
                 ":name": data.name,
                 ":dueDate": data.dueDate,
                 ":done": data.done,
+            },
+            ReturnValues: "ALL_NEW",
+        }).promise()
+
+        const item = result.Attributes
+        return item as TodoItem
+    }
+
+    async setAttachmentUrl(userId: string, todoId: string, url: string)
+        : Promise<TodoItem> {
+        logger.info(`set URL for todo ${todoId} for user ${userId}`)
+
+        const result = await this.docClient.update({
+            TableName: this.todoTable,
+            Key: {
+                todoId: todoId,
+                userId: userId,
+            },
+            UpdateExpression: "SET #URL=:url",
+            ExpressionAttributeNames: {
+                "#URL": "attachmentUrl",
+            },
+            ExpressionAttributeValues: {
+                ":url": url,
             },
             ReturnValues: "ALL_NEW",
         }).promise()
